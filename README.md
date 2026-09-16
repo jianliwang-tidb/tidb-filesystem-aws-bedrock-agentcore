@@ -11,14 +11,6 @@
 - 旧 Runtime 曾因镜像中的 `SyntaxError: '(' was never closed` 启动失败；必须重新构建并推送 ARM64 镜像后再验收。
 - agent-a 和 agent-b 必须使用同一个可读写 scoped token，并只访问共享目录；agent-c 必须使用独立的只读 scoped token 和独立目录，同时验证其无法列出 A/B 共享目录。
 
-## 最近一次 AWS 验收
-
-2026-09-07 在 `us-east-2` 使用全新 ARM64 镜像和全新 Runtime 完成可见性隔离验收。agent-a 与 agent-b 使用同一个可读写 `DRIVE9_API_KEY`，并看到相同的 `shared/functional/` 目录内容；agent-c 使用独立只读 key，只授权自己的目录，访问 A/B 的 `shared` 目录得到 `not found`，无法发现该目录。新镜像 digest 为 `sha256:371a9c3da46ef810ba2417bfd78885bd81c762e60495a7bf51c7e90941840286`。回归结果为 27 项 `PASS`、3 项 `PLATFORM_BLOCKED`、0 项 `FAIL`，整体结论为 **CONDITIONAL GO**。完整报告和打印日志见 `artifacts/agentcore-20260907T133955Z-visibility/`。
-
-本次验收修正了三处环境兼容问题：Runtime 执行角色增加 `bedrock-agentcore.amazonaws.com` trust principal；Secret 默认名改为包含 `TEST_RUN_ID`，避免误用旧 token；调用脚本兼容 AWS CLI `invoke-agent-runtime` 的 positional 输出文件和 boto3 1.42.x 环境。
-
-如果 Runtime 报 `Drive9 secret JSON must contain token or api_key`，先检查 Secret 中 token 是否为空。`create-secret` 成功不代表 token 有效；必须在生成 token 后检查文件非空，并在写入 Secret 后检查 `.token | length > 0`。
-
 ## 文件
 
 - `app.py`：Runtime handler；从 Secrets Manager 读取 Drive9 token，执行 CLI action。
