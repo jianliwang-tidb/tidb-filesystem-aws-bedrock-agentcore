@@ -1,0 +1,4 @@
+# AgentCore Runtime SDK. The public 1.x releases require Python 3.10+.
+bedrock-agentcore>=1.22.0,<2
+# Keep the control/data-plane service models aligned with the Runtime SDK.
+boto3>=1.42.0,<2
